@@ -42,6 +42,18 @@ Copy-Item project\.env.example project\.env
 
 ### 启动应用
 
+在运行 `python project/app.py` 之前，请先启动 Ollama。因为本项目用到了 Ollama 的 embedding 模型 `nomic-embed-text:latest`：
+
+```bash
+ollama serve
+```
+
+你也可以运行下面的命令，检查 Ollama 是否已经正常启动：
+
+```bash
+ollama list
+```
+
 ```bash
 python project/app.py
 ```
@@ -114,7 +126,8 @@ PDF → Markdown Conversion → Parent/Child Chunking → Vector Indexing → Ag
 
 | 文件 | 作用 |
 |------|------|
-| `project/ui/fastapi_ui.py` | FastAPI 路由和内嵌 HTML/CSS/JS UI |
+| `project/ui/fastapi_ui.py` | FastAPI 路由与 UI 后端逻辑 |
+| `project/ui/html_templates.py` | 登录页、文档页、聊天页的 HTML/CSS/JS 模板 |
 
 ## 配置说明
 

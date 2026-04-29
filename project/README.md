@@ -48,6 +48,18 @@ Copy-Item project\.env.example project\.env
 
 ### Running the Application
 
+Before running `python project/app.py`, start Ollama first because this project uses the Ollama embedding model `nomic-embed-text:latest`:
+
+```bash
+ollama serve
+```
+
+You can verify that Ollama is running correctly with:
+
+```bash
+ollama list
+```
+
 Start the FastAPI application locally:
 
 ```bash
@@ -127,7 +139,8 @@ PDF → Markdown Conversion → Parent/Child Chunking → Vector Indexing → Ag
 
 | File | Purpose |
 |------|---------|
-| `project/ui/fastapi_ui.py` | FastAPI routes plus embedded HTML/CSS/JS for auth, document management, and chat |
+| `project/ui/fastapi_ui.py` | FastAPI routes and UI backend logic |
+| `project/ui/html_templates.py` | Extracted HTML/CSS/JS templates for auth, document management, and chat |
 
 ---
 
