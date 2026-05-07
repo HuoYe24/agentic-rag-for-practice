@@ -129,11 +129,13 @@ ollama pull nomic-embed-text
 - `LLM_BASE_URL`
 - `LLM_API_KEY`
 - `DENSE_MODEL`
+- `DENSE_VECTOR_SIZE`
 - `SPARSE_MODEL`
 - `OLLAMA_HOST`
 - `APP_HOST`
 - `APP_PORT`
 - `APP_AUTO_RELOAD`
+- `CROSS_ENCODER_LOCAL_FILES_ONLY`
 
 推荐先将 `project/.env.example` 复制并重命名为 `project/.env`：
 

@@ -41,16 +41,31 @@ PROJECT_DIR = os.path.dirname(__file__)
 
 def _env_flag(name: str, default: bool) -> bool:
     value = os.environ.get(name)
-    if value is None:
+    if value is None or not value.strip():
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _env_str(name: str, default: str) -> str:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    value = value.strip()
+    return value if value else default
+
+
+def _env_int(name: str, default: int) -> int:
+    value = _env_str(name, "")
+    if not value:
+        return default
+    return int(value)
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    host = os.environ.get("APP_HOST", "127.0.0.1")
-    port = int(os.environ.get("APP_PORT", "7860"))
+    host = _env_str("APP_HOST", "127.0.0.1")
+    port = _env_int("APP_PORT", 7860)
     auto_reload = _env_flag("APP_AUTO_RELOAD", True)
 
     print("\n🔨 Creating RAG Assistant...")

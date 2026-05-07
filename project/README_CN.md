@@ -151,9 +151,11 @@ SPARSE_VECTOR_NAME = "sparse"
 ### 模型相关
 
 ```python
-DENSE_MODEL = "sentence-transformers/all-mpnet-base-v2"
+DENSE_MODEL = "nomic-embed-text"
+DENSE_VECTOR_SIZE = 768
 SPARSE_MODEL = "Qdrant/bm25"
-LLM_MODEL = "qwen3:4b-instruct-2507-q4_K_M"
+OLLAMA_HOST = "http://127.0.0.1:11434"
+LLM_MODEL = "qwen-max-0919"
 LLM_TEMPERATURE = 0
 ```
 
@@ -208,11 +210,12 @@ LANGFUSE_BASE_URL = "http://localhost:3000"
 
 - `RERANKER_TYPE`
 - `CROSS_ENCODER_RERANKER_MODEL`
+- `CROSS_ENCODER_LOCAL_FILES_ONLY`
 - `INITIAL_SEARCH_TOP_K`
 - `RERANKER_TOP_M`
 - `FINAL_OUTPUT_TOP_N`
 
-如果当前环境无法访问 Hugging Face，可以暂时把 `RERANKER_TYPE` 改成 `none` 或 `llm`。
+默认 `CROSS_ENCODER_LOCAL_FILES_ONLY=true`，离线环境会优先使用本地缓存的 cross-encoder 模型，不会在启动时阻塞下载。如果需要自动从 Hugging Face 下载模型，可以改成 `false`。
 
 ## 可观测性
 

@@ -167,9 +167,11 @@ SPARSE_VECTOR_NAME = "sparse"               # Named sparse vector field (BM25)
 
 ```python
 # Default: single model configuration
-DENSE_MODEL = "sentence-transformers/all-mpnet-base-v2"
+DENSE_MODEL = "nomic-embed-text"
+DENSE_VECTOR_SIZE = 768
 SPARSE_MODEL = "Qdrant/bm25"
-LLM_MODEL = "qwen3:4b-instruct-2507-q4_K_M"
+OLLAMA_HOST = "http://127.0.0.1:11434"
+LLM_MODEL = "qwen-max-0919"
 LLM_TEMPERATURE = 0  # 0 = deterministic, 1 = creative
 ```
 

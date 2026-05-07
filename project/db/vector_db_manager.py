@@ -1,4 +1,5 @@
 import threading
+import atexit
 
 import config
 from langchain_ollama import OllamaEmbeddings
@@ -12,19 +13,30 @@ class VectorDbManager:
     _shared_client = None
     _shared_dense_embeddings = None
     _shared_sparse_embeddings = None
+    _close_registered = False
 
     __client: QdrantClient
     __dense_embeddings: OllamaEmbeddings
     __sparse_embeddings: FastEmbedSparse
+
+    @staticmethod
+    def _create_dense_embeddings() -> OllamaEmbeddings:
+        return OllamaEmbeddings(
+            model=config.DENSE_MODEL,
+            base_url=config.OLLAMA_HOST,
+        )
     
     def __init__(self):
         with VectorDbManager._shared_lock:
             if VectorDbManager._shared_client is None:
                 VectorDbManager._shared_client = QdrantClient(path=config.QDRANT_DB_PATH)
-                print("✅ Qdrant client initialized (in-memory mode)")
+                if not VectorDbManager._close_registered:
+                    atexit.register(VectorDbManager.close_shared_client)
+                    VectorDbManager._close_registered = True
+                print(f"✅ Qdrant client initialized: {config.QDRANT_DB_PATH}")
 
             if VectorDbManager._shared_dense_embeddings is None:
-                VectorDbManager._shared_dense_embeddings = OllamaEmbeddings(model=config.DENSE_MODEL)
+                VectorDbManager._shared_dense_embeddings = self._create_dense_embeddings()
 
             if VectorDbManager._shared_sparse_embeddings is None:
                 VectorDbManager._shared_sparse_embeddings = FastEmbedSparse(model_name=config.SPARSE_MODEL)
@@ -34,13 +46,25 @@ class VectorDbManager:
         self.__dense_embeddings = VectorDbManager._shared_dense_embeddings
         self.__sparse_embeddings = VectorDbManager._shared_sparse_embeddings
 
+    @staticmethod
+    def close_shared_client():
+        with VectorDbManager._shared_lock:
+            if VectorDbManager._shared_client is None:
+                return
+            try:
+                VectorDbManager._shared_client.close()
+            except Exception:
+                pass
+            finally:
+                VectorDbManager._shared_client = None
+
     def create_collection(self, collection_name):
             try:
                 print(f"📝 Creating collection: {collection_name}...")
                 self.__client.create_collection(
                     collection_name=collection_name,
                     vectors_config=qmodels.VectorParams(
-                        size=768, 
+                        size=config.DENSE_VECTOR_SIZE,
                         distance=qmodels.Distance.COSINE
                     ),
                     sparse_vectors_config={
@@ -77,7 +101,10 @@ class VectorDbManager:
                 embedding=self.__dense_embeddings,
                 sparse_embedding=self.__sparse_embeddings,
                 retrieval_mode=RetrievalMode.HYBRID,
-                sparse_vector_name=config.SPARSE_VECTOR_NAME
+                sparse_vector_name=config.SPARSE_VECTOR_NAME,
+                # Avoid embedding a dummy string while loading basic UI state.
+                # Ollama failures should surface when indexing/searching actually needs embeddings.
+                validate_collection_config=False,
             )
         except Exception as e:
             print(f"❌ Error getting collection: {e}")

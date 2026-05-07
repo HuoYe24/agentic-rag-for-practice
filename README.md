@@ -129,11 +129,13 @@ Key settings:
 - `LLM_BASE_URL`
 - `LLM_API_KEY`
 - `DENSE_MODEL`
+- `DENSE_VECTOR_SIZE`
 - `SPARSE_MODEL`
 - `OLLAMA_HOST`
 - `APP_HOST`
 - `APP_PORT`
 - `APP_AUTO_RELOAD`
+- `CROSS_ENCODER_LOCAL_FILES_ONLY`
 
 Copy and rename `project/.env.example` to `project/.env` first:
 

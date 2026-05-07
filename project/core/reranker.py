@@ -121,11 +121,30 @@ class CrossEncoderReranker(BaseReranker):
     
     def __init__(self, model_name: str = None):
         """Initialize cross-encoder reranker."""
+        import os
+        from pathlib import Path
+
         import config
+
+        if config.CROSS_ENCODER_LOCAL_FILES_ONLY:
+            os.environ["HF_HUB_OFFLINE"] = "1"
+            os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
         from sentence_transformers import CrossEncoder
 
         self.model_name = model_name or config.CROSS_ENCODER_RERANKER_MODEL
-        self.model = CrossEncoder(self.model_name)
+        model_path = self.model_name
+        if config.CROSS_ENCODER_LOCAL_FILES_ONLY and not Path(model_path).exists():
+            from huggingface_hub import snapshot_download
+
+            model_path = snapshot_download(
+                repo_id=self.model_name,
+                local_files_only=True,
+            )
+        self.model = CrossEncoder(
+            model_path,
+            local_files_only=config.CROSS_ENCODER_LOCAL_FILES_ONLY,
+        )
     
     def rerank(self, query: str, chunks: List[Dict]) -> List[Tuple[Dict, float]]:
         """Rerank using cross-encoder relevance scores.
