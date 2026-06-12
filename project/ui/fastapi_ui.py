@@ -4,6 +4,8 @@ import tempfile
 import threading
 import time
 import uuid
+import config
+
 from pathlib import Path
 from typing import Dict, List
 
@@ -637,15 +639,32 @@ def create_app() -> FastAPI:
             original_name = Path(f.filename or "").name
             if not original_name:
                 continue
+            max_bytes = config.MAX_UPLOAD_SIZE_MB * 1024 * 1024
             target_path = os.path.join(user_temp_dir, original_name)
             try:
+                if f.size is not None and f.size > max_bytes:
+                    rejected_files.append(f"{original_name} (exceeds {config.MAX_UPLOAD_SIZE_MB} MB limit)")
+                    continue
+                total_written = 0
                 with open(target_path, "wb") as out_file:
                     while True:
                         chunk = await f.read(UPLOAD_CHUNK_SIZE)
                         if not chunk:
                             break
+                        total_written += len(chunk)
+                        if total_written > max_bytes:
+                            raise MemoryError(
+                                f"File exceeds size limit ({config.MAX_UPLOAD_SIZE_MB} MB)"
+                            )
                         out_file.write(chunk)
                 temp_paths.append(target_path)
+            except MemoryError:
+                try:
+                    if os.path.exists(target_path):
+                        os.remove(target_path)
+                except Exception:
+                    pass
+                rejected_files.append(f"{original_name} (exceeds {config.MAX_UPLOAD_SIZE_MB} MB limit)")
             except Exception as e:
                 try:
                     if os.path.exists(target_path):
@@ -668,7 +687,10 @@ def create_app() -> FastAPI:
                 message = "No supported files were uploaded. Only .pdf and .md are accepted."
                 if rejected_files:
                     message = f"{message} Rejected: {', '.join(rejected_files[:5])}"
-                return {"ok": False, "message": message, "added": 0, "skipped": 0, "state": app_state(username, runtime, state)}
+                return JSONResponse(
+                    {"ok": False, "message": message, "added": 0, "skipped": 0, "state": app_state(username, runtime, state)},
+                    status_code=413,
+                )
 
         job_id = uuid.uuid4().hex
         processing_message = upload_processing_message(temp_paths)

@@ -30,6 +30,12 @@ class DocumentChuncker:
 
     def create_chunks_single(self, md_path, source_name=None):
         doc_path = Path(md_path)
+        md_size_mb = doc_path.stat().st_size / (1024 * 1024)
+        if md_size_mb > config.MAX_MD_SIZE_MB:
+            raise RuntimeError(
+                f"Markdown file too large ({md_size_mb:.1f} MB > {config.MAX_MD_SIZE_MB} MB limit). "
+                f"Please split the source document manually."
+            )
         
         with open(doc_path, "r", encoding="utf-8") as f:
             parent_chunks = self.__parent_splitter.split_text(f.read())

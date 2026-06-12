@@ -114,6 +114,11 @@ def _pdf_to_markdown_with_llamacloud(pdf_path, output_dir):
 
 
 def pdf_to_markdown(pdf_path, output_dir):
+    pdf_size_mb = Path(pdf_path).stat().st_size / (1024 * 1024)
+    if pdf_size_mb > config.MAX_UPLOAD_SIZE_MB:
+        raise RuntimeError(
+            f"PDF is too large ({pdf_size_mb:.1f} MB > {config.MAX_UPLOAD_SIZE_MB} MB limit)"
+        )
     if is_llamaparse_enabled():
         return _pdf_to_markdown_with_llamacloud(pdf_path, output_dir)
     return _pdf_to_markdown_legacy(pdf_path, output_dir)

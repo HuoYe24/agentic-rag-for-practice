@@ -71,6 +71,10 @@ HEADERS_TO_SPLIT_ON = [
     ("###", "H3")
 ]
 
+
+# --- Memory Safety Configuration ---
+MAX_UPLOAD_SIZE_MB = _env_int("MAX_UPLOAD_SIZE_MB", 200)  # Upload file size limit (MB)
+MAX_MD_SIZE_MB = _env_int("MAX_MD_SIZE_MB", 50)           # Markdown file size limit (MB)
 # --- Reranker Configuration ---
 RERANKER_TYPE = _env_str("RERANKER_TYPE", "cross_encoder").strip().lower()  # Options: "llm", "cross_encoder", "none"
 RERANKER_ENABLED = RERANKER_TYPE in {"llm", "cross_encoder"}
